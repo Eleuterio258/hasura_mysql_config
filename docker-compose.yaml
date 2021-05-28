@@ -1,0 +1,53 @@
+version: "3.6"
+services:
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    expose:
+      - 3306
+    volumes:
+      - /var/lib/mysql
+      - ./migrations:/docker-entrypoint-initdb.d
+    environment:
+      MYSQL_DATABASE: localhost
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: Roott@2018
+      MYSQL_ROOT_PASSWORD: Roott@2018
+
+  postgres:
+    image: postgres:12
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: Roott@2018
+
+  graphql-engine:
+    image: hasura/graphql-engine:pull5655-633f084f
+    ports:
+      - "8080:8080"
+    depends_on:
+      - "postgres"
+    command:
+      - graphql-engine
+      - --mysql-host
+      - mysql
+      - --mysql-port
+      - "3306"
+      - --mysql-user
+      - user
+      - --mysql-password
+      - password
+      - --mysql-dbname
+      - database
+      - serve
+    restart: always
+    environment:
+      HASURA_GRAPHQL_DATABASE_URL: postgres://postgres:postgrespassword@postgres:5432/postgres
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+
+volumes:
+  db_data:
